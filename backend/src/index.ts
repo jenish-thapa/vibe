@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import http from "http";
 import { config } from "dotenv";
 import { logger } from "./utils/logger";
@@ -11,6 +12,20 @@ import messageRoutes from "./routes/message.route";
 
 const init = () => {
   const app = express();
+
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
+
+  // app.use((req, res, next) => {
+  //   logger.info({ method: req.method, url: req.url, body: req.body });
+  //   next();
+  // });
 
   app.use(express.json());
   app.use(cookieParser());
