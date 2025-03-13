@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum ChannelType {
+  DM
+  GROUP
+}
+
+model User {
+  id         String   @id @default(uuid())
+  username   String   @unique
+  fullname   String
+  password   String
+  gender     Gender
+  profilePic String   @map("profile_pic")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  channels ChannelMember[]
+  Message  Message[]
+
+  @@map("users")
+}
+
+model Channel {
+  id          String      @id @default(uuid())
+  channelType ChannelType @map("channel_type")
+  channelName String?     @map("channel_name")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  members ChannelMember[]
+  Message Message[]
+
+  @@map("channels")
+}
+
+model ChannelMember {
+  userId     String   @map("user_id")
+  channelId  String   @map("channel_id")
+  joinedAt   DateTime @default(now()) @map("joined_at")
+  lastSeenAt DateTime @map("last_seen_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@id([userId, channelId])
+  @@map("channel_members")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  senderId  String   @map("sender_id")
+  channelId String   @map("channel_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  sender  User    @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
